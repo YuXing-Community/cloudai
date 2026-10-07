@@ -1,0 +1,12 @@
+node_modules/
+dist/
+target/
+.venv/
+__pycache__/
+*.pyc
+.logs/
+data/
+deploy/volumes/
+.DS_Store
+.idea/
+.vscode/

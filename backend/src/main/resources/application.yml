@@ -1,0 +1,52 @@
+server:
+  port: 8580
+
+spring:
+  application:
+    name: cloudai-backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/cloudai?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: ""
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 120MB
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: always
+  mvc:
+    async:
+      request-timeout: -1
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+
+cloudai:
+  # data 根目录：.md、Skill、上传文件、记忆文档、会话工作区都按类型放在这里
+  data-dir: ${CLOUDAI_DATA_DIR:../data}
+  executor-url: ${CLOUDAI_EXECUTOR_URL:http://127.0.0.1:8590}
+  # 执行器回调后端的地址
+  backend-url: ${CLOUDAI_BACKEND_URL:http://127.0.0.1:8580}
+  # 前端对外地址，用于生成分享链接
+  public-url: ${CLOUDAI_PUBLIC_URL:http://localhost:5573}
+  # 用于签发登录 token、加密凭据，生产环境务必修改
+  secret: ${CLOUDAI_SECRET:cloudai-dev-secret-change-me-0123456789}
+  # 执行器回调后端内部接口时使用
+  internal-token: ${CLOUDAI_INTERNAL_TOKEN:cloudai-internal-dev-token}
+  timezone: Asia/Shanghai
+
+logging:
+  level:
+    com.cloudai: info
