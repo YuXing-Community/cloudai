@@ -158,6 +158,16 @@ summary::after { content: "+"; font-weight: 400; color: var(--accent); }
 details[open] summary::after { content: "−"; }
 details p { font-size: 14px; margin-top: 14px; }
 .resources { border-top: 1px solid var(--line); }
+.video-guide { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+.video-guide h3 { font-size: 22px; margin-bottom: 10px; }
+.video-guide p { font-size: 14px; }
+.sponsors { border-top: 1px solid var(--line); }
+.sponsor-layout { display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 48px; }
+.sponsor-image { display: block; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; }
+.sponsor-image img { width: 100%; }
+.sponsor-copy h3 { font-size: 25px; margin-bottom: 18px; }
+.sponsor-copy p { font-size: 14px; margin-top: 12px; }
+.sponsor-copy .button { margin-top: 24px; }
 .community-panel { display: grid; grid-template-columns: 1fr 360px; align-items: center; gap: 60px; padding: 36px; margin-bottom: 48px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 .community-copy h3 { font-size: 25px; line-height: 1.4; margin-bottom: 18px; }
 .community-copy p { max-width: 460px; font-size: 15px; }
@@ -235,6 +245,7 @@ details p { font-size: 14px; margin-top: 14px; }
   .docker-guide { margin-top: 36px; padding-top: 32px; }
   .onboarding { margin-top: 26px; }
   .boundaries h2 { max-width: none; font-size: 28px; }
+  .sponsor-layout { grid-template-columns: 1fr; gap: 28px; }
   .community-panel { grid-template-columns: 1fr; gap: 28px; padding: 24px; margin-bottom: 32px; }
   .community-copy h3 { font-size: 22px; }
   .community-image { width: 100%; max-width: 360px; justify-self: center; }

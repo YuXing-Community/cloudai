@@ -4,11 +4,12 @@
 
 CloudAI 是一个可自托管的 AI 应用平台，用于创建 AI 助手、连接模型与业务工具，并管理知识库、会话、定时任务和团队权限。支持基于会话记录进行模型评测与人工审核。
 
-[项目主页](https://yuxing-community.github.io/cloudai/) · [飞书资料](https://my.feishu.cn/wiki/N9Y0wCJROixSLFkjHcEcAJDonyg?from=auth_notice&hash=b4491cbbcfc61bdf9169be4f196eed80) · [交流群](#资料与交流群) · [快速开始](#快速开始) · [Docker 部署](#docker-部署) · [反馈问题](https://github.com/YuXing-Community/cloudai/issues)
+[项目主页](https://yuxing-community.github.io/cloudai/) · [飞书资料](https://my.feishu.cn/wiki/N9Y0wCJROixSLFkjHcEcAJDonyg?from=auth_notice&hash=b4491cbbcfc61bdf9169be4f196eed80) · [视频指引](https://b23.tv/gqNsvKg) · [交流群](#资料与交流群) · [赞助商](#赞助商) · [快速开始](#快速开始) · [Docker 部署](#docker-部署) · [反馈问题](https://github.com/YuXing-Community/cloudai/issues)
 
 ## 资料与交流群
 
 - [飞书资料文档](https://my.feishu.cn/wiki/N9Y0wCJROixSLFkjHcEcAJDonyg?from=auth_notice&hash=b4491cbbcfc61bdf9169be4f196eed80)，访问密码 `349#637x`。
+- [B 站视频指引 · CloudAI 项目介绍](https://b23.tv/gqNsvKg)
 - 使用飞书扫描下方二维码，加入「Cloud AI 用户群」，交流部署、使用与开发问题。点击图片可查看原图。
 
 <a href="site/assets/cloudai-user-group.png"><img src="site/assets/cloudai-user-group.png" alt="Cloud AI 用户群飞书入群二维码，点击查看原图" width="420"></a>
@@ -142,3 +143,14 @@ docker compose --env-file deploy/.env -f deploy/compose.yml up -d --wait --wait-
 - 后端启动时通过 `CREATE TABLE IF NOT EXISTS` 补建 `eval_task`、`eval_run`、`eval_result`、`eval_annotation` 表。
 - 新模型配置使用 `low`、`medium`、`high`、`xhigh`、`max` 等级。已有 `trial` 和 `standard` 值继续保留，可在模型管理中调整。
 - 评测会调用配置的模型服务。启用重放会重新执行用户输入，并可能再次调用工具，使用前应确认工具写入操作的影响。
+
+
+## 赞助商
+
+感谢 **YDATA AI** 对 CloudAI 项目的支持。
+
+[![YData AI API 中转服务介绍配图](site/assets/ydata-sponsor.png)](https://www.ydata.space)
+
+YDATA AI 是一个 AI 模型 API 中转站，提供 OpenAI 兼容接口、API 令牌管理、模型与价格查询，以及客户端接入指引。可用模型、接入方式和计费信息可在官网查看。
+
+[访问 YDATA AI](https://www.ydata.space)
