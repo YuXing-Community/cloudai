@@ -15,7 +15,12 @@ import com.cloudai.entity.EvalEntities.EvalAnnotation;
 import com.cloudai.entity.EvalEntities.EvalResult;
 import com.cloudai.entity.EvalEntities.EvalRun;
 import com.cloudai.entity.EvalEntities.EvalTask;
-import com.cloudai.mapper.Mappers.*;
+import com.cloudai.mapper.Mappers.AgentMapper;
+import com.cloudai.mapper.Mappers.ChatSessionMapper;
+import com.cloudai.mapper.Mappers.EvalAnnotationMapper;
+import com.cloudai.mapper.Mappers.EvalResultMapper;
+import com.cloudai.mapper.Mappers.EvalRunMapper;
+import com.cloudai.mapper.Mappers.EvalTaskMapper;
 import com.cloudai.service.EvalService;
 import com.cloudai.service.ModelService;
 import com.cloudai.service.ScheduleService;
@@ -24,12 +29,24 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Agent 评测：评测任务、执行批次、评测结果、候选执行记录 */
 @RestController

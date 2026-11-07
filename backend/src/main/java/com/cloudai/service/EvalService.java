@@ -11,7 +11,12 @@ import com.cloudai.entity.EvalEntities.EvalResult;
 import com.cloudai.entity.EvalEntities.EvalRun;
 import com.cloudai.entity.EvalEntities.EvalTask;
 import com.cloudai.entity.SessionEvent;
-import com.cloudai.mapper.Mappers.*;
+import com.cloudai.mapper.Mappers.AgentMapper;
+import com.cloudai.mapper.Mappers.ChatSessionMapper;
+import com.cloudai.mapper.Mappers.EvalResultMapper;
+import com.cloudai.mapper.Mappers.EvalRunMapper;
+import com.cloudai.mapper.Mappers.EvalTaskMapper;
+import com.cloudai.mapper.Mappers.SessionEventMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,8 +35,15 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Agent 评测：按任务筛选会话（执行记录）→ 可选用指定模型重放执行 → 评测模型读取完整执行轨迹打分并给出修改意见 → 结果按会话落表。
