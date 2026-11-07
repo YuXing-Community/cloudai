@@ -56,7 +56,7 @@ public class SessionController {
         if (agentId != null && !agentId.isBlank()) w.eq(ChatSession::getAgentId, agentId);
         if (mine == 1) w.eq(ChatSession::getCreatorId, UserContext.userId());
         if (source != null && !source.isBlank()) w.eq(ChatSession::getSource, source);
-        else w.ne(ChatSession::getSource, "debug");
+        else w.notIn(ChatSession::getSource, "debug", com.cloudai.service.EvalService.EVAL_SOURCE);
         if (status != null && !status.isBlank()) w.eq(ChatSession::getStatus, status);
         if (version != null) w.eq(ChatSession::getAgentVersion, version);
         if (q != null && !q.isBlank()) {

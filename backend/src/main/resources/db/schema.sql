@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS model_def (
   provider_id    BIGINT       NOT NULL,
   model_id       VARCHAR(128) NOT NULL,
   display_name   VARCHAR(128) NULL,
-  level          VARCHAR(16)  NOT NULL DEFAULT 'standard' COMMENT '模型等级 trial/standard/high',
+  level          VARCHAR(16)  NOT NULL DEFAULT 'medium' COMMENT '模型等级 low/medium/high/xhigh/max',
   context_window INT          NOT NULL DEFAULT 128000,
   max_tokens     INT          NOT NULL DEFAULT 8192,
   input_price    DECIMAL(12,6) NULL COMMENT '元/百万 token',
@@ -502,3 +502,102 @@ CREATE TABLE IF NOT EXISTS team_message (
   created_at      DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   KEY idx_ts (team_session_id)
 ) COMMENT 'Team 用户输入/消息/事件';
+
+-- ------------------------------------------------------------------ Agent 评测 / 人工打标
+
+CREATE TABLE IF NOT EXISTS eval_task (
+  id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+  space_id        VARCHAR(36)  NOT NULL,
+  name            VARCHAR(128) NOT NULL,
+  description     VARCHAR(1024) NULL,
+  agent_ids       JSON         NOT NULL COMMENT '被评测的 Agent id 列表',
+  judge_model_ref VARCHAR(256) NOT NULL COMMENT '评测模型 providerKey/modelId',
+  replay_model_ref VARCHAR(256) NULL COMMENT '重放执行模型；为空时直接评测原会话日志，非空时用该模型重新执行原会话的用户输入后再评测',
+  filters         JSON         NULL COMMENT '{timeMode:all/range/recent, from, to, recentHours, sessionIds:[], keyword, sources:[], statuses:[]}',
+  criteria        TEXT         NULL COMMENT '自定义评测标准，追加到评测提示词',
+  pass_score      INT          NOT NULL DEFAULT 60 COMMENT '及格分（0-100）',
+  skip_evaluated  TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '跳过本任务已评测过且之后无新消息的会话',
+  trigger_mode    VARCHAR(16)  NOT NULL DEFAULT 'manual' COMMENT 'manual/schedule/realtime',
+  cron            VARCHAR(64)  NULL COMMENT '5 段 cron（schedule 模式）',
+  timezone        VARCHAR(64)  NOT NULL DEFAULT 'Asia/Shanghai',
+  next_fire_at    DATETIME(3)  NULL,
+  realtime_since  DATETIME(3)  NULL COMMENT '实时模式开启时间，只评测此后产生/更新的会话',
+  enabled         TINYINT(1)   NOT NULL DEFAULT 1,
+  last_status     VARCHAR(16)  NULL,
+  last_run_at     DATETIME(3)  NULL,
+  creator_id      BIGINT       NOT NULL,
+  created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  KEY idx_space (space_id),
+  KEY idx_fire (enabled, trigger_mode, next_fire_at)
+) COMMENT 'Agent 评测任务';
+
+CREATE TABLE IF NOT EXISTS eval_run (
+  id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+  task_id       BIGINT       NOT NULL,
+  space_id      VARCHAR(36)  NOT NULL,
+  trigger_type  VARCHAR(16)  NOT NULL COMMENT 'manual/schedule/realtime',
+  status        VARCHAR(16)  NOT NULL DEFAULT 'running' COMMENT 'running/success/partial/failed/stopped',
+  total         INT          NOT NULL DEFAULT 0,
+  done          INT          NOT NULL DEFAULT 0,
+  failed        INT          NOT NULL DEFAULT 0,
+  avg_score     DECIMAL(6,2) NULL,
+  pass_count    INT          NOT NULL DEFAULT 0,
+  error         TEXT         NULL,
+  creator_id    BIGINT       NULL,
+  started_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  finished_at   DATETIME(3)  NULL,
+  KEY idx_task (task_id, started_at)
+) COMMENT 'Agent 评测执行批次';
+
+CREATE TABLE IF NOT EXISTS eval_result (
+  id                BIGINT PRIMARY KEY AUTO_INCREMENT,
+  space_id          VARCHAR(36)  NOT NULL,
+  task_id           BIGINT       NOT NULL,
+  run_id            BIGINT       NOT NULL,
+  session_id        VARCHAR(36)  NOT NULL COMMENT '被评测的原会话 id',
+  replay_session_id VARCHAR(36)  NULL COMMENT '重放执行生成的会话 id',
+  agent_id          VARCHAR(36)  NOT NULL,
+  agent_version     INT          NULL,
+  session_title     VARCHAR(256) NULL,
+  session_model_ref VARCHAR(256) NULL COMMENT 'Agent 执行所用模型',
+  judge_model_ref   VARCHAR(256) NOT NULL,
+  session_last_event_at DATETIME(3) NULL COMMENT '评测时会话最后事件时间，用于判断会话之后是否有新消息',
+  status            VARCHAR(16)  NOT NULL DEFAULT 'pending' COMMENT 'pending/running/success/failed',
+  score             DECIMAL(5,1) NULL COMMENT '综合得分 0-100',
+  passed            TINYINT(1)   NULL,
+  dimensions        JSON         NULL COMMENT '[{key,name,score,comment}]',
+  summary           TEXT         NULL COMMENT '评测结论',
+  issues            JSON         NULL COMMENT '问题列表 [{severity,step,description}]',
+  suggestions       JSON         NULL COMMENT '模型回复内容修改意见 [string]',
+  improved_reply    LONGTEXT     NULL COMMENT '建议的改写回复',
+  judge_input_tokens  INT        NOT NULL DEFAULT 0,
+  judge_output_tokens INT        NOT NULL DEFAULT 0,
+  duration_ms       BIGINT       NOT NULL DEFAULT 0,
+  error             TEXT         NULL,
+  created_at        DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  finished_at       DATETIME(3)  NULL,
+  KEY idx_task_session (task_id, session_id),
+  KEY idx_run (run_id),
+  KEY idx_space_session (space_id, session_id)
+) COMMENT 'Agent 评测结果（粒度：单个会话）';
+
+CREATE TABLE IF NOT EXISTS eval_annotation (
+  id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+  space_id        VARCHAR(36)  NOT NULL,
+  mode            VARCHAR(16)  NOT NULL COMMENT 'eval=基于模型评测结果打标 / session=直接基于会话打标',
+  eval_result_id  BIGINT       NULL,
+  session_id      VARCHAR(36)  NOT NULL,
+  agent_id        VARCHAR(36)  NULL,
+  score           INT          NULL COMMENT '人工评分 0-100',
+  label           VARCHAR(16)  NULL COMMENT 'good/acceptable/bad',
+  tags            JSON         NULL COMMENT '问题标签',
+  agree_with_model TINYINT(1)  NULL COMMENT 'eval 模式：是否认可模型评测结论',
+  comment         TEXT         NULL COMMENT '人工意见',
+  corrected_reply LONGTEXT     NULL COMMENT '人工修正后的回复',
+  annotator_id    BIGINT       NOT NULL,
+  created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  KEY idx_space_session (space_id, session_id),
+  KEY idx_result (eval_result_id)
+) COMMENT '人工审核表（会话打标、打分、意见）';

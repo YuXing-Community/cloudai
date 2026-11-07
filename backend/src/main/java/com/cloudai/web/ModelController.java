@@ -250,9 +250,6 @@ public class ModelController {
             g.put("models", ms);
             out.add(g);
         }
-        // 体验模型（trial 等级）分组排在最前
-        out.sort(Comparator.comparing(g -> ((List<?>) g.get("models")).stream()
-                .noneMatch(m -> "trial".equals(((Map<?, ?>) m).get("level")))));
         return R.ok(out);
     }
 
@@ -297,7 +294,7 @@ public class ModelController {
             d.setProviderId(p.getId());
             d.setModelId(m.modelId.trim());
             d.setDisplayName(m.displayName);
-            d.setLevel(m.level == null ? "standard" : m.level);
+            d.setLevel(m.level == null ? "medium" : m.level);
             d.setContextWindow(m.contextWindow == null ? 128000 : m.contextWindow);
             d.setMaxTokens(m.maxTokens == null ? 8192 : m.maxTokens);
             d.setInputPrice(m.inputPrice);

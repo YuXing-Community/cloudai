@@ -4,7 +4,7 @@ import { Plus, Trash2, ChevronDown, Zap, Loader2, CheckCircle2, XCircle } from '
 import Modal from '@/components/ui/Modal.vue'
 import Select from '@/components/ui/Select.vue'
 import Switch from '@/components/ui/Switch.vue'
-import { settingsApi, API_TYPES, MODEL_LEVELS } from '@/api/settings'
+import { settingsApi, API_TYPES, MODEL_LEVELS, LEVEL_TONE, levelLabel } from '@/api/settings'
 import { toast } from '@/components/ui/toast'
 
 const props = defineProps<{ open: boolean; provider: any | null }>()
@@ -16,7 +16,7 @@ const testRes = ref<any>(null)
 const saving = ref(false)
 
 function blankModel() {
-  return { modelId: '', displayName: '', level: 'standard', contextWindow: 128000, maxTokens: 8192, inputPrice: null, outputPrice: null, cachePrice: null, isDefault: false, _open: false }
+  return { modelId: '', displayName: '', level: 'medium', contextWindow: 128000, maxTokens: 8192, inputPrice: null, outputPrice: null, cachePrice: null, isDefault: false, _open: false }
 }
 watch(() => props.open, (v) => {
   if (!v) return
@@ -83,7 +83,7 @@ function setDefault(m: any) {
         <div class="row">
           <input v-model="m.modelId" class="input mono" placeholder="新模型 ID" style="flex: 1" />
           <span v-if="m.isDefault" class="tag tag-blue">默认</span>
-          <span class="tag" :class="m.level === 'high' ? 'tag-purple' : m.level === 'trial' ? 'tag-cyan' : ''">{{ MODEL_LEVELS.find((l) => l.value === m.level)?.label.split('（')[0] }}</span>
+          <span class="tag" :class="LEVEL_TONE[m.level]">{{ levelLabel(m.level) }}</span>
           <button class="btn btn-sm" @click="m._open = !m._open">高级配置 <ChevronDown :style="{ transform: m._open ? 'rotate(180deg)' : '' }" /></button>
           <button class="icon-btn danger" @click="f.models.splice(i, 1)"><Trash2 /></button>
         </div>

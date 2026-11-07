@@ -4,6 +4,7 @@ import { ArrowUp, Check, ChevronDown, Paperclip, Plus, Search, Sparkles, Square,
 import Popover from '@/components/ui/Popover.vue'
 import type { ModelOption } from '@/api/session'
 import { http } from '@/api/http'
+import { LEVEL_TONE, levelLabel } from '@/api/settings'
 import { bytes, kfmt } from '@/utils/format'
 import { toast } from '@/components/ui/toast'
 
@@ -145,7 +146,7 @@ defineExpose({ focus: () => ta.value?.focus(), setText: (t: string) => { text.va
               <div>{{ m.displayName || m.modelId }}<span v-if="m.contextWindow" class="faint"> · {{ kfmt(m.contextWindow).replace('.0', '') }}</span></div>
               <div v-if="m.ref === modelRef" class="m-sub">{{ m.modelId }}</div>
             </div>
-            <span v-if="m.level === 'trial'" class="tag">体验</span>
+            <span v-if="m.level" class="tag" :class="LEVEL_TONE[m.level]">{{ levelLabel(m.level) }}</span>
             <span v-if="m.isDefault" class="m-def">默认</span>
             <Check v-if="m.ref === modelRef" class="m-check" />
           </div>

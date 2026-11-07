@@ -1,0 +1,136 @@
+name: cloudai
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: cloudai
+      MYSQL_USER: cloudai
+      MYSQL_PASSWORD: ${CLOUDAI_DB_PASSWORD:?Set CLOUDAI_DB_PASSWORD in deploy/.env}
+      MYSQL_ROOT_PASSWORD: ${CLOUDAI_MYSQL_ROOT_PASSWORD:?Set CLOUDAI_MYSQL_ROOT_PASSWORD in deploy/.env}
+      TZ: Asia/Shanghai
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--default-time-zone=+08:00"]
+    volumes:
+      - ./volumes/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql -h 127.0.0.1 -u cloudai -D cloudai -e 'SELECT 1' >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  etcd:
+    extends:
+      file: milvus-compose.yml
+      service: etcd
+
+  minio:
+    extends:
+      file: milvus-compose.yml
+      service: minio
+    image: milvusdb/minio:RELEASE.2024-12-18T13-15-44Z
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+
+  milvus:
+    image: milvusdb/milvus:v2.4.15
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - ./volumes/milvus:/var/lib/milvus
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 90s
+    restart: unless-stopped
+
+  executor:
+    platform: linux/amd64
+    image: cloudai-executor:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: executor
+      network: ${CLOUDAI_BUILD_NETWORK:-default}
+    environment:
+      CLOUDAI_DATA_DIR: /app/data
+      CLOUDAI_BACKEND_URL: http://backend:8580
+      CLOUDAI_MILVUS_URI: http://milvus:19530
+      CLOUDAI_INTERNAL_TOKEN: ${CLOUDAI_INTERNAL_TOKEN:?Set CLOUDAI_INTERNAL_TOKEN in deploy/.env}
+      TZ: Asia/Shanghai
+    volumes:
+      - ../data:/app/data
+    depends_on:
+      milvus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8590/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  backend:
+    image: cloudai-backend:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: backend
+      network: ${CLOUDAI_BUILD_NETWORK:-default}
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cloudai?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: cloudai
+      SPRING_DATASOURCE_PASSWORD: ${CLOUDAI_DB_PASSWORD:?Set CLOUDAI_DB_PASSWORD in deploy/.env}
+      CLOUDAI_DATA_DIR: /app/data
+      CLOUDAI_EXECUTOR_URL: http://executor:8590
+      CLOUDAI_BACKEND_URL: http://backend:8580
+      CLOUDAI_PUBLIC_URL: ${CLOUDAI_PUBLIC_URL:-http://localhost:5573}
+      CLOUDAI_SECRET: ${CLOUDAI_SECRET:?Set CLOUDAI_SECRET in deploy/.env}
+      CLOUDAI_INTERNAL_TOKEN: ${CLOUDAI_INTERNAL_TOKEN:?Set CLOUDAI_INTERNAL_TOKEN in deploy/.env}
+      TZ: Asia/Shanghai
+    volumes:
+      - ../data:/app/data
+    depends_on:
+      mysql:
+        condition: service_healthy
+      executor:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "test \"$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8580/api/auth/me)\" = 401"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    restart: unless-stopped
+
+  frontend:
+    image: cloudai-frontend:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: frontend
+      network: ${CLOUDAI_BUILD_NETWORK:-default}
+    ports:
+      - "${CLOUDAI_WEB_PORT:-5573}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped

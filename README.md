@@ -1,6 +1,10 @@
-# CloudAI — 企业级 Agent 托管平台
+<p align="center"><img src="site/assets/cloudai-logo.jpg" alt="CloudAI" width="200"></p>
 
-CloudAI 把“个人助理工具”升级为“可创建、可托管、可复用、可治理”的生产级 Agent 平台。
+# CloudAI
+
+CloudAI 是一个可自托管的 AI 应用平台，用于创建 AI 助手、连接模型与业务工具，并管理知识库、会话、定时任务和团队权限。支持基于会话记录进行模型评测与人工审核。
+
+[项目主页](https://yuxing-community.github.io/cloudai/) · [快速开始](#快速开始) · [Docker 部署](#docker-部署) · [反馈问题](https://github.com/YuXing-Community/cloudai/issues)
 
 ## 架构
 
@@ -8,7 +12,7 @@ CloudAI 把“个人助理工具”升级为“可创建、可托管、可复用
 ┌────────────┐   HTTP/SSE   ┌──────────────────┐  HTTP/SSE   ┌──────────────────────┐
 │ frontend   │ ───────────▶ │ backend (Java)   │ ──────────▶ │ executor (Python)     │
 │ Vue3 + Vite│              │ Spring Boot 3    │             │ FastAPI               │
-│ :5173      │ ◀─────────── │ :8580            │ ◀────────── │ :8590                 │
+│ :5573      │ ◀─────────── │ :8580            │ ◀────────── │ :8590                 │
 └────────────┘              └──────┬───────────┘             └──────┬───────────────┘
                                    │ JDBC                           │ pymilvus / BGE
                             ┌──────▼──────┐                  ┌──────▼──────────────┐
@@ -27,7 +31,7 @@ CloudAI 把“个人助理工具”升级为“可创建、可托管、可复用
 
 ## 数据存储
 
-- **MySQL `cloudai` 库**：用户（带角色权限）、空间、成员、角色、Agent、Agent 版本、会话、执行步骤、Agent 执行数据、Skill、工具集成、定时任务、执行记录、消息通道、文件、记忆库与记忆文档、模型 Provider、凭据、Hook、运行环境、Sandbox、Agent Team 任务。
+- **MySQL `cloudai` 库**：用户（带角色权限）、空间、成员、角色、Agent、Agent 版本、会话、执行步骤、Agent 执行数据、Skill、工具集成、定时任务、执行记录、消息通道、文件、记忆库与记忆文档、模型 Provider、凭据、Hook、运行环境、Sandbox、Agent Team 任务、评测任务 `eval_task` / 评测批次 `eval_run` / 评测结果 `eval_result` / 人工审核表 `eval_annotation`。
 - **Milvus（独立实例，端口 19540）**：collection `cloudai_knowledge`。知识库/记忆库文档上传后由 BGE（`BAAI/bge-small-zh-v1.5`，512 维）切块 embedding 写入，同时在对应目录生成 `_index/keywords.md` 关键词索引文件。
 - **文件目录** `data/`：
   - `data/skills/<space>/<skill>/<version>/` — Skill 包（含 SKILL.md）
@@ -66,9 +70,48 @@ Maven 依赖走 `backend/.mvn-settings.xml`（阿里云镜像，不影响 `~/.m2
 
 `scripts/demo_mcp_server.py` 是测试用的本地 MCP Server（:8599，含两个 MCP 工具和一个 OpenAPI 接口），可用来体验「工具集成」。
 
+## Docker 部署
+
+整套服务使用 `deploy/compose.yml`：Nginx 前端、Java 后端、Python 执行器、独立 MySQL，以及 Milvus / etcd / MinIO。仅前端端口对外开放，默认 `5573`；所有容器配置 `unless-stopped` 自动重启。
+
+前置条件：服务器已安装 Docker 和 Docker Compose，并且能下载镜像及构建依赖。执行器使用 Linux AMD64 镜像和 CPU 版 PyTorch，适用于本次部署的 x86_64 服务器。
+
+首次部署，在项目根目录生成服务器本地配置。已有 `deploy/.env` 应保留，尤其不要重新生成加密密钥或数据库密码。不要提交密码和密钥。
+
+```bash
+umask 077
+{
+  for key in CLOUDAI_DB_PASSWORD CLOUDAI_MYSQL_ROOT_PASSWORD CLOUDAI_SECRET CLOUDAI_INTERNAL_TOKEN; do
+    printf '%s=%s\n' "$key" "$(openssl rand -hex 32)"
+  done
+  echo 'CLOUDAI_PUBLIC_URL=http://服务器地址:5573'
+} > deploy/.env
+```
+
+`CLOUDAI_PUBLIC_URL` 应填写浏览器实际访问的地址，用于生成分享链接。可设置 `CLOUDAI_WEB_PORT` 修改前端端口。
+
+```bash
+docker compose --env-file deploy/.env -f deploy/compose.yml config --quiet
+docker compose --env-file deploy/.env -f deploy/compose.yml up -d --build --wait --wait-timeout 300
+docker compose --env-file deploy/.env -f deploy/compose.yml ps
+docker compose --env-file deploy/.env -f deploy/compose.yml logs --tail 100 backend executor
+```
+
+后端和执行器共享 `data/`；MySQL、Milvus、etcd 和 MinIO 数据保存在 `deploy/volumes/`。首次部署可同步已有 `data/models/bge-small-zh-v1.5/`，其余业务数据需与数据库一起迁移，不能只复制文件目录。新数据库的第一个注册用户自动成为管理员，模型 Provider 需在界面配置。
+
+若服务器只能通过宿主机本地 HTTP 代理下载构建依赖，在 `deploy/.env` 增加 `CLOUDAI_BUILD_NETWORK=host`，然后让 Docker 构建使用当前终端的代理变量：
+
+```bash
+docker compose --env-file deploy/.env -f deploy/compose.yml build --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY --build-arg http_proxy --build-arg https_proxy --build-arg no_proxy
+docker compose --env-file deploy/.env -f deploy/compose.yml up -d --wait --wait-timeout 300
+```
+
+代理仅用于构建，不写入运行镜像。停止服务用 `docker compose --env-file deploy/.env -f deploy/compose.yml down`，保留上述持久化目录即可再次启动。
+
 ## 功能清单
 
 - **Agents**：会话、工作区、智能体（版本化编排配置）、Agent 小队、任务看板、定时任务、消息通道、文件中心、记忆库、向量库查询、用量
+- **评测**：Agent 评测（选择评测模型 / 时间 / Agent / 执行记录，按会话 ID 落表评分与回复修改意见；可直接评测原会话日志，也可用指定模型重放后评测；手动、定时、实时三种触发）、人工打标（基于模型评测结果复核 / 直接基于会话打标，形成人工审核表，可导出 CSV）
 - **Plugins**：工具集成（MCP Server / OpenAPI / 云日志）、MCP 服务、凭据、Skills（文件夹/zip 上传、版本、共享）、Hooks
 - **沙箱**：Sandbox 实例（超时/销毁）、运行环境
 - **空间配置**：基础信息、成员管理（自定义角色权限）、模型管理
@@ -78,3 +121,17 @@ Maven 依赖走 `backend/.mvn-settings.xml`（阿里云镜像，不影响 `~/.m2
 - 沙箱是本地实现：每个会话一个隔离工作目录 + 进程组，文件类工具限制在工作目录内；未做容器级隔离（Kubernetes Pod / Envoy 出站代理需接入真实集群）。
 - 云日志查询目前实现了阿里云 SLS；火山云 TLS、华为云 LTS 可建插件但查询尚未实现。
 - 「记忆 Provider」「API Keys」「迁移导入」不在本期范围，界面中显示为即将上线。
+
+
+## 项目主页
+
+`site/` 包含独立的静态介绍页，使用原生 HTML、CSS 和 JavaScript。修改主页并推送到 `main` 后，`.github/workflows/pages.yml` 会发布到 GitHub Pages。仓库的 Pages 发布来源需设为 GitHub Actions。
+
+本地预览主页可执行 `python3 -m http.server 8080 --directory site`，然后打开 http://localhost:8080。
+
+## 升级说明
+
+- 升级前备份 MySQL、`data/` 和 `deploy/volumes/`，保留已有 `deploy/.env` 中的密码与密钥。
+- 后端启动时通过 `CREATE TABLE IF NOT EXISTS` 补建 `eval_task`、`eval_run`、`eval_result`、`eval_annotation` 表。
+- 新模型配置使用 `low`、`medium`、`high`、`xhigh`、`max` 等级。已有 `trial` 和 `standard` 值继续保留，可在模型管理中调整。
+- 评测会调用配置的模型服务。启用重放会重新执行用户输入，并可能再次调用工具，使用前应确认工具写入操作的影响。

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { RefreshCw, Plus, Bot, SlidersHorizontal, Trash2, Zap, Sparkles, Star } from 'lucide-vue-next'
-import { settingsApi } from '@/api/settings'
+import { settingsApi, LEVEL_TONE, levelLabel } from '@/api/settings'
 import { useAuth } from '@/stores/auth'
 import ProviderModal from './ProviderModal.vue'
 import { confirm, toast } from '@/components/ui/toast'
@@ -52,7 +52,6 @@ async function makeDefault(p: any, m: any) {
   toast.success(`默认模型已设为 ${m.modelId}`)
   load()
 }
-const LEVEL: Record<string, string> = { trial: '体验', standard: '标准', high: 'high' }
 </script>
 
 <template>
@@ -102,7 +101,7 @@ const LEVEL: Record<string, string> = { trial: '体验', standard: '标准', hig
         <div v-for="m in p.models" :key="m.id" class="pm">
           <Sparkles class="pm-ico" />
           <span class="mono bold">{{ m.displayName || m.modelId }}</span>
-          <span v-if="m.level" class="tag" :class="m.level === 'high' ? 'tag-purple' : m.level === 'trial' ? 'tag-cyan' : ''">{{ LEVEL[m.level] || m.level }}</span>
+          <span v-if="m.level" class="tag" :class="LEVEL_TONE[m.level]">{{ levelLabel(m.level) }}</span>
           <span class="tag">{{ kfmt(m.contextWindow).replace('.0', '') }} context</span>
           <span v-if="m.inputPrice != null" class="tiny muted">¥{{ m.inputPrice }}/{{ m.outputPrice }}</span>
           <div class="spacer" />

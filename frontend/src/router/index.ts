@@ -27,6 +27,10 @@ const routes: RouteRecordRaw[] = [
       { path: 'memory/:id', component: () => import('@/views/memory/MemoryDetailView.vue'), meta: { title: '记忆库', perm: 'memory:view' } },
       { path: 'vector-search', component: () => import('@/views/memory/VectorSearchView.vue'), meta: { title: '向量库查询', perm: 'memory:view' } },
       { path: 'usage', component: () => import('@/views/usage/UsageView.vue'), meta: { title: '用量', perm: 'usage:view' } },
+      // 评测
+      { path: 'evals', component: () => import('@/views/eval/EvalTaskListView.vue'), meta: { title: 'Agent 评测', perm: 'eval:view' } },
+      { path: 'evals/:id', component: () => import('@/views/eval/EvalTaskDetailView.vue'), meta: { title: 'Agent 评测', perm: 'eval:view' } },
+      { path: 'annotations', component: () => import('@/views/eval/AnnotationView.vue'), meta: { title: '人工打标', perm: 'eval:view' } },
       // Plugins
       { path: 'plugins/tools', component: () => import('@/views/plugin/ToolsView.vue'), meta: { title: '工具集成', perm: 'plugin:view' } },
       { path: 'plugins/tools/new', component: () => import('@/views/plugin/ToolCreateView.vue'), meta: { title: '工具集成', perm: 'plugin:edit' } },

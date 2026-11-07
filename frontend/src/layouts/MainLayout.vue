@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   MessagesSquare, FolderOpen, Bot, Users, LayoutGrid, CalendarClock, Radio, FileText, Database, LineChart,
   Wrench, PlugZap, KeyRound, Sparkles, Webhook, SquareTerminal, Cloud, Settings, PanelLeft, BookOpen, Moon, Sun,
-  ChevronsUpDown, Check, Plus, LogOut, ScanSearch, Lock,
+  ChevronsUpDown, Check, Plus, LogOut, ScanSearch, Lock, ClipboardCheck, Tags,
 } from 'lucide-vue-next'
 import { useAuth } from '@/stores/auth'
 import { sidebarCollapsed, theme, toggleTheme } from '@/stores/ui'
@@ -33,6 +33,13 @@ const nav = [
       { to: '/memory', label: '记忆库', icon: Database, perm: 'memory:view' },
       { to: '/vector-search', label: '向量库查询', icon: ScanSearch, perm: 'memory:view' },
       { to: '/usage', label: '用量', icon: LineChart, perm: 'usage:view' },
+    ],
+  },
+  {
+    group: '评测',
+    items: [
+      { to: '/evals', label: 'Agent 评测', icon: ClipboardCheck, perm: 'eval:view' },
+      { to: '/annotations', label: '人工打标', icon: Tags, perm: 'eval:view' },
     ],
   },
   {

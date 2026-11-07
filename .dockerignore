@@ -1,0 +1,15 @@
+.git
+.claude
+**/node_modules
+**/dist
+**/target
+**/.venv
+**/__pycache__
+**/*.pyc
+.logs
+data
+deploy/volumes
+deploy/volumes.bak*
+deploy/.env
+.DS_Store
+IMPLEMENTATION_PLAN.md

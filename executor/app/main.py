@@ -131,7 +131,8 @@ async def llm_complete(body: dict):
         msgs.append({"role": "system", "content": body["system"]})
     msgs += body.get("messages") or [{"role": "user", "content": body.get("prompt") or ""}]
     try:
-        r = await llm.chat_once(spec, msgs, None, body.get("max_tokens") or 2048, body.get("temperature"), timeout=120)
+        r = await llm.chat_once(spec, msgs, None, body.get("max_tokens") or 2048, body.get("temperature"),
+                                timeout=min(float(body.get("timeout") or 120), 600))
     except llm.LLMError as e:
         raise HTTPException(status_code=502, detail=str(e))
     return {"text": r.text, "usage": {"input_tokens": r.input_tokens, "output_tokens": r.output_tokens}, "duration_ms": r.duration_ms}

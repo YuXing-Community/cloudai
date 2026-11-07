@@ -23,6 +23,9 @@ public final class Perm {
     public static final String MEMORY_VIEW = "memory:view";
     public static final String MEMORY_EDIT = "memory:edit";
     public static final String USAGE_VIEW = "usage:view";
+    public static final String EVAL_VIEW = "eval:view";
+    public static final String EVAL_EDIT = "eval:edit";
+    public static final String EVAL_ANNOTATE = "eval:annotate";
     public static final String PLUGIN_VIEW = "plugin:view";
     public static final String PLUGIN_EDIT = "plugin:edit";
     public static final String SANDBOX_VIEW = "sandbox:view";
@@ -49,6 +52,9 @@ public final class Perm {
         ALL.put(MEMORY_VIEW, "查看记忆库");
         ALL.put(MEMORY_EDIT, "管理记忆库");
         ALL.put(USAGE_VIEW, "查看用量");
+        ALL.put(EVAL_VIEW, "查看 Agent 评测与人工审核");
+        ALL.put(EVAL_EDIT, "管理 Agent 评测任务");
+        ALL.put(EVAL_ANNOTATE, "人工打标");
         ALL.put(PLUGIN_VIEW, "查看插件（工具/Skills/Hooks/凭据）");
         ALL.put(PLUGIN_EDIT, "管理插件（工具/Skills/Hooks/凭据）");
         ALL.put(SANDBOX_VIEW, "查看沙箱与运行环境");
@@ -60,7 +66,7 @@ public final class Perm {
     }
 
     private static final List<String> VIEW_ALL = List.of(AGENT_VIEW, TEAM_VIEW, SCHEDULE_VIEW, CHANNEL_VIEW,
-            FILE_VIEW, MEMORY_VIEW, USAGE_VIEW, PLUGIN_VIEW, SANDBOX_VIEW);
+            FILE_VIEW, MEMORY_VIEW, USAGE_VIEW, EVAL_VIEW, PLUGIN_VIEW, SANDBOX_VIEW);
 
     public static Set<String> ownerPerms() {
         return Set.copyOf(ALL.keySet());
@@ -74,7 +80,7 @@ public final class Perm {
 
     public static Set<String> memberPerms() {
         var s = new java.util.HashSet<>(VIEW_ALL);
-        s.addAll(List.of(AGENT_EDIT, SESSION_USE, TEAM_EDIT, SCHEDULE_EDIT, FILE_EDIT, MEMORY_EDIT, PLUGIN_EDIT, SANDBOX_EDIT));
+        s.addAll(List.of(AGENT_EDIT, SESSION_USE, TEAM_EDIT, SCHEDULE_EDIT, FILE_EDIT, MEMORY_EDIT, EVAL_EDIT, EVAL_ANNOTATE, PLUGIN_EDIT, SANDBOX_EDIT));
         return s;
     }
 

@@ -7,6 +7,8 @@ __pycache__/
 .logs/
 data/
 deploy/volumes/
+deploy/volumes.bak*/
+deploy/.env
 .DS_Store
 .idea/
 .vscode/

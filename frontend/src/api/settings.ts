@@ -33,7 +33,11 @@ export const API_TYPES = [
   { label: 'anthropic（/v1/messages）', value: 'anthropic' },
 ]
 export const MODEL_LEVELS = [
-  { label: '体验（免费-效果一般）', value: 'trial' },
-  { label: '标准', value: 'standard' },
-  { label: '高级 high', value: 'high' },
+  { label: 'low', value: 'low' },
+  { label: 'medium', value: 'medium' },
+  { label: 'high', value: 'high' },
+  { label: 'extra high', value: 'xhigh' },
+  { label: 'max', value: 'max' },
 ]
+export const LEVEL_TONE: Record<string, string> = { low: 'tag-cyan', medium: '', high: 'tag-purple', xhigh: 'tag-orange', max: 'tag-red' }
+export const levelLabel = (v: string) => MODEL_LEVELS.find((l) => l.value === v)?.label || v

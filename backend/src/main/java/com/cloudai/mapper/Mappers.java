@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cloudai.entity.*;
 import com.cloudai.entity.AgentLinks.AgentFavorite;
 import com.cloudai.entity.AgentLinks.AgentGrant;
+import com.cloudai.entity.EvalEntities.*;
 import com.cloudai.entity.ModelEntities.ModelDef;
 import com.cloudai.entity.ModelEntities.ModelProvider;
 import com.cloudai.entity.OpsEntities.*;
@@ -46,4 +47,9 @@ public final class Mappers {
     @Mapper public interface TeamTaskMapper extends BaseMapper<TeamTask> {}
     @Mapper public interface TeamRunMapper extends BaseMapper<TeamRun> {}
     @Mapper public interface TeamMessageMapper extends BaseMapper<TeamMessage> {}
+
+    @Mapper public interface EvalTaskMapper extends BaseMapper<EvalTask> {}
+    @Mapper public interface EvalRunMapper extends BaseMapper<EvalRun> {}
+    @Mapper public interface EvalResultMapper extends BaseMapper<EvalResult> {}
+    @Mapper public interface EvalAnnotationMapper extends BaseMapper<EvalAnnotation> {}
 }
