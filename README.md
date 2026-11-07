@@ -8,7 +8,7 @@ CloudAI 是一个可自托管的 AI 应用平台，用于创建 AI 助手、连�
 
 ## 资料与交流群
 
-- [飞书资料文档](https://my.feishu.cn/wiki/N9Y0wCJROixSLFkjHcEcAJDonyg?from=auth_notice&hash=b4491cbbcfc61bdf9169be4f196eed80)
+- [飞书资料文档](https://my.feishu.cn/wiki/N9Y0wCJROixSLFkjHcEcAJDonyg?from=auth_notice&hash=b4491cbbcfc61bdf9169be4f196eed80)，访问密码 `349#637x`。
 - 使用飞书扫描下方二维码，加入「Cloud AI 用户群」，交流部署、使用与开发问题。点击图片可查看原图。
 
 <a href="site/assets/cloudai-user-group.png"><img src="site/assets/cloudai-user-group.png" alt="Cloud AI 用户群飞书入群二维码，点击查看原图" width="420"></a>
