@@ -158,6 +158,13 @@ summary::after { content: "+"; font-weight: 400; color: var(--accent); }
 details[open] summary::after { content: "−"; }
 details p { font-size: 14px; margin-top: 14px; }
 .resources { border-top: 1px solid var(--line); }
+.community-panel { display: grid; grid-template-columns: 1fr 360px; align-items: center; gap: 60px; padding: 36px; margin-bottom: 48px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.community-copy h3 { font-size: 25px; line-height: 1.4; margin-bottom: 18px; }
+.community-copy p { max-width: 460px; font-size: 15px; }
+.community-copy .button { margin-top: 26px; }
+.community-copy .community-hint { margin-top: 24px; font-size: 13px; }
+.community-image { display: block; border-radius: 10px; overflow: hidden; background: #fff; }
+.community-image img { width: 100%; }
 .resource-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px; }
 .resource-grid a { display: block; padding-top: 20px; border-top: 2px solid var(--line); transition: border-color .18s; }
 .resource-grid a:hover { border-color: var(--accent); }
@@ -228,6 +235,9 @@ details p { font-size: 14px; margin-top: 14px; }
   .docker-guide { margin-top: 36px; padding-top: 32px; }
   .onboarding { margin-top: 26px; }
   .boundaries h2 { max-width: none; font-size: 28px; }
+  .community-panel { grid-template-columns: 1fr; gap: 28px; padding: 24px; margin-bottom: 32px; }
+  .community-copy h3 { font-size: 22px; }
+  .community-image { width: 100%; max-width: 360px; justify-self: center; }
   .resource-grid { grid-template-columns: 1fr 1fr; gap: 28px 24px; }
   .resource-grid h3 { font-size: 14px; }
   .resource-grid p { font-size: 12px; }
